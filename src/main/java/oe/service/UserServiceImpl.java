@@ -1,14 +1,14 @@
 package oe.service;
 
+import java.util.List;
+
 import oe.dao.UserDAO;
 import oe.dao.UserDAOImpl;
 import oe.entity.User;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class UserServiceImpl implements UserService {
-    UserDAOImpl dao = new UserDAOImpl();
+    UserDAO dao = new UserDAOImpl();
+
     @Override
     public List<User> findAll() {
         return dao.findAll();
@@ -16,6 +16,23 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User findById(String email) {
-        return null;
+        return dao.findByEmail(email);
     }
+
+    @Override
+    public void deleteByEmail(String email) {
+        var user = dao.findByEmail(email);
+        dao.delete(user);
+    }
+
+    @Override
+    public void create(User user) {
+        dao.create(user);
+    }
+
+    @Override
+    public void update(User user) {
+        dao.update(user);
+    }
+
 }
