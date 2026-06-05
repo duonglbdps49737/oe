@@ -38,9 +38,9 @@ public class UserServlet extends HttpServlet {
         } else if(path.contains("create")) {
 			user.setEmail(req.getParameter("email"));
 			user.setPassword(req.getParameter("password"));
-			user.setFullname(req.getParameter("fullname"));
-			user.setEnabled(Boolean.valueOf(req.getParameter("enabled")));
-			user.setAdmin(Boolean.valueOf(req.getParameter("admin")));
+			user.setFullname(req.getParameter("Fullname"));
+			user.setEnabled(Boolean.parseBoolean(req.getParameter("enabled")));
+			user.setAdmin(Boolean.parseBoolean(req.getParameter("admin")));
             try {
                 BeanUtils.populate(user, req.getParameterMap());
                 userService.create(user);

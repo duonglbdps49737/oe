@@ -1,31 +1,59 @@
-<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
-<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ page pageEncoding="UTF-8"%>
+<%@ taglib prefix="c" uri="jakarta.tags.core"%>
+<style>
+  .fav-title { font-size: 20px; font-weight: bold; margin-bottom: 16px; color: #333; }
+  .video-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 16px; margin-bottom: 16px;
+  }
+  .video-card { border: 2px solid #e87722; border-radius: 6px; overflow: hidden; background: #fff; }
+  .video-card a.poster-link {
+    display: flex; align-items: center; justify-content: center;
+    width: 100%; aspect-ratio: 4/3; background: #f0f0f0;
+    overflow: hidden; text-decoration: none; color: #999; font-size: 13px;
+  }
+  .video-card a.poster-link img { width: 100%; height: 100%; object-fit: cover; }
+  .card-info  { background: #d4edda; padding: 8px 10px 4px; }
+  .card-title { font-weight: bold; font-size: 13px; text-transform: uppercase; color: #333; margin-bottom: 6px; }
+  .card-actions { background: #d4edda; padding: 4px 10px 10px; display: flex; gap: 6px; }
+  .btn-unlike { background: #2196f3; color: #fff; border: none; padding: 5px 16px; border-radius: 4px; cursor: pointer; font-size: 13px; }
+  .btn-share  { background: #f44336; color: #fff; border: none; padding: 5px 16px; border-radius: 4px; cursor: pointer; font-size: 13px; }
+  .empty-msg  { color: #888; font-size: 14px; padding: 20px 0; }
+</style>
 
-<div class="container mt-4">
-    <h3 class="mb-4 text-uppercase border-bottom pb-2">My Favorites</h3>
+<div class="fav-title">My Favorites</div>
 
-    <div class="row row-cols-1 row-cols-md-3 g-4">
-        <c:forEach var="vid" items="${favoriteList}">
-            <div class="col">
-                <div class="card h-100 shadow-sm">
-                    <a href="${pageContext.request.contextPath}/video/detail?id=${vid.id}">
-                        <img src="https://img.youtube.com/vi/${vid.id}/maxresdefault.jpg" class="card-img-top" alt="${vid.title}">
-                    </a>
-                    <div class="card-body text-center bg-light">
-                        <h5 class="card-title text-truncate" title="${vid.title}">${vid.title}</h5>
-                    </div>
-                    <div class="card-footer bg-white d-flex justify-content-center border-top-0 pt-0">
-                        <a href="${pageContext.request.contextPath}/unlike?id=${vid.id}" class="btn btn-danger me-2">Unlike</a>
-                        <a href="${pageContext.request.contextPath}/share?id=${vid.id}" class="btn btn-warning">Share</a>
-                    </div>
-                </div>
-            </div>
-        </c:forEach>
-    </div>
-
-    <c:if test="${empty favoriteList}">
-        <div class="alert alert-secondary text-center mt-4">
-            Bạn chưa có tiểu phẩm yêu thích nào. Hãy về <a href="${pageContext.request.contextPath}/home">Trang chủ</a> để khám phá thêm!
+<c:choose>
+  <c:when test="${empty favorites}">
+    <p class="empty-msg">Bạn chưa có tiểu phẩm yêu thích nào.</p>
+  </c:when>
+  <c:otherwise>
+    <div class="video-grid">
+      <c:forEach var="fav" items="${favorites}">
+        <div class="video-card">
+          <a class="poster-link"
+             href="${pageContext.request.contextPath}/video/detail/${fav.video.id}">
+            <c:choose>
+              <c:when test="${not empty fav.video.poster}">
+                <img src="${fav.video.poster}" alt="${fav.video.title}"/>
+              </c:when>
+              <c:otherwise>POSTER</c:otherwise>
+            </c:choose>
+          </a>
+          <div class="card-info">
+            <div class="card-title">${fav.video.title}</div>
+          </div>
+          <div class="card-actions">
+            <%-- Unlike: gỡ khỏi danh sách yêu thích --%>
+            <a href="${pageContext.request.contextPath}/video/unlike/${fav.id}">
+              <button class="btn-unlike">Unlike</button>
+            </a>
+            <a href="${pageContext.request.contextPath}/video/share/${fav.video.id}">
+              <button class="btn-share">Share</button>
+            </a>
+          </div>
         </div>
-    </c:if>
-</div>
+      </c:forEach>
+    </div>
+  </c:otherwise>
+</c:choose>

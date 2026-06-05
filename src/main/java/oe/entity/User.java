@@ -11,8 +11,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@NoArgsConstructor
 @AllArgsConstructor
+@NoArgsConstructor
 @Builder
 @Data
 
@@ -22,13 +22,13 @@ public class User {
 	@Id
 	String email;
 	String password;
-	String Fullname;
+	String fullname;
 	boolean admin;
 	boolean enabled;
-	
+
 	@OneToMany(mappedBy = "user")
 	List<Favorite> favorites;
-	
+
 	@OneToMany(mappedBy = "user")
 	List<Share> shares;
 }

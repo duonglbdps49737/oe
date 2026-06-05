@@ -15,150 +15,185 @@ import oe.entity.User;
 import oe.entity.Video;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 
 @WebServlet({
-	"/video/list",
-	"/video/detail/*",
-	"/video/like/*",
-	"/video/share/*"
+    "/video/list",
+    "/video/detail/*",
+    "/video/like/*",
+    "/video/unlike/*",
+    "/video/share/*",
+    "/video/favorites"
 })
 public class VideoServlet extends HttpServlet {
 
-	@Override
-	protected void service(HttpServletRequest req, HttpServletResponse resp)
-			throws ServletException, IOException {
+    @Override
+    protected void service(HttpServletRequest req, HttpServletResponse resp)
+            throws ServletException, IOException {
+        var path = req.getServletPath();
+        if      (path.contains("favorites")) handleFavorites(req, resp);
+        else if (path.contains("unlike"))    handleUnlike(req, resp);
+        else if (path.contains("like"))      handleLike(req, resp);
+        else if (path.contains("share"))     handleShare(req, resp);
+        else if (path.contains("detail"))    handleDetail(req, resp);
+        else resp.sendRedirect(req.getContextPath() + "/home/index");
+    }
 
-		var path = req.getServletPath();
+    // ── Chi tiết + sidebar đã xem ────────────────────────────────────────
+    private void handleDetail(HttpServletRequest req, HttpServletResponse resp)
+            throws ServletException, IOException {
 
-		if (path.contains("list")) {
-			// Redirect về trang chủ (list dùng HomeServlet)
-			resp.sendRedirect(req.getContextPath() + "/home/index");
+        String id = req.getPathInfo() != null
+                ? req.getPathInfo().replaceFirst("/", "") : req.getParameter("id");
 
-		} else if (path.contains("detail")) {
-			handleDetail(req, resp);
+        var dao   = new VideoDAOImpl();
+        Video video = dao.findById(id);
 
-		} else if (path.contains("like")) {
-			handleLike(req, resp);
+        // Tăng views 1 lần / trình duyệt
+        String cookieName = "viewed_" + id;
+        boolean seen = false;
+        if (req.getCookies() != null)
+            for (Cookie c : req.getCookies())
+                if (c.getName().equals(cookieName)) { seen = true; break; }
 
-		} else if (path.contains("share")) {
-			handleShare(req, resp);
-		}
-	}
+        if (!seen) {
+            dao.increaseViews(id);
+            Cookie ck = new Cookie(cookieName, "1");
+            ck.setMaxAge(60 * 60 * 24 * 30);
+            resp.addCookie(ck);
+        }
 
-	// ── Chi tiết + tăng views bằng cookie ──────────────────────────────────
-	private void handleDetail(HttpServletRequest req, HttpServletResponse resp)
-			throws ServletException, IOException {
+        // Lấy danh sách đã xem từ cookie "history"
+        List<Video> viewedVideos = new ArrayList<>();
+        if (req.getCookies() != null) {
+            for (Cookie c : req.getCookies()) {
+                if (c.getName().equals("history")) {
+                    String[] ids = c.getValue().split(",");
+                    for (String vid : ids) {
+                        if (!vid.isBlank() && !vid.equals(id)) {
+                            try { viewedVideos.add(dao.findById(vid)); } catch (Exception ignored) {}
+                        }
+                    }
+                    break;
+                }
+            }
+        }
 
-		// Lấy id từ path: /video/detail/{id}
-		String id = req.getPathInfo() != null
-				? req.getPathInfo().replaceFirst("/", "")
-				: req.getParameter("id");
+        // Cập nhật cookie history (tối đa 5)
+        String history = id;
+        if (req.getCookies() != null)
+            for (Cookie c : req.getCookies())
+                if (c.getName().equals("history")) {
+                    String existing = Arrays.stream(c.getValue().split(","))
+                            .filter(v -> !v.equals(id)).limit(4)
+                            .reduce("", (a, b) -> a.isEmpty() ? b : a + "," + b);
+                    history = id + (existing.isEmpty() ? "" : "," + existing);
+                    break;
+                }
+        Cookie hCookie = new Cookie("history", history);
+        hCookie.setMaxAge(60 * 60 * 24 * 30);
+        resp.addCookie(hCookie);
 
-		var dao = new VideoDAOImpl();
-		Video video = dao.findById(id);
+        req.setAttribute("video", video);
+        req.setAttribute("viewedVideos", viewedVideos);
+        req.setAttribute("view", "/video/detail.jsp");
+        req.getRequestDispatcher("/layout/index.jsp").forward(req, resp);
+    }
 
-		// Tăng views 1 lần / trình duyệt bằng cookie
-		String cookieName = "viewed_" + id;
-		boolean seen = false;
-		if (req.getCookies() != null) {
-			for (Cookie c : req.getCookies()) {
-				if (c.getName().equals(cookieName)) { seen = true; break; }
-			}
-		}
-		if (!seen) {
-			dao.increaseViews(id);
-			Cookie ck = new Cookie(cookieName, "1");
-			ck.setMaxAge(60 * 60 * 24 * 30); // 30 ngày
-			resp.addCookie(ck);
-		}
+    // ── Like ────────────────────────────────────────────────────────────────
+    private void handleLike(HttpServletRequest req, HttpServletResponse resp)
+            throws IOException {
+        User user = (User) req.getSession().getAttribute("user");
+        if (user == null) { resp.sendRedirect(req.getContextPath() + "/auth/login"); return; }
 
-		req.setAttribute("video", video);
-		req.setAttribute("view", "/video/detail.jsp");
-		req.getRequestDispatcher("/layout/index.jsp").forward(req, resp);
-	}
+        String videoId = req.getPathInfo() != null
+                ? req.getPathInfo().replaceFirst("/", "") : req.getParameter("id");
 
-	// ── Like (yêu cầu đăng nhập) ───────────────────────────────────────────
-	private void handleLike(HttpServletRequest req, HttpServletResponse resp)
-			throws IOException {
+        var favDao   = new FavoriteDAOImpl();
+        var videoDao = new VideoDAOImpl();
 
-		User user = (User) req.getSession().getAttribute("user");
-		if (user == null) {
-			resp.sendRedirect(req.getContextPath() + "/auth/login");
-			return;
-		}
+        if (favDao.findByUserAndVideo(user.getEmail(), videoId) == null) {
+            favDao.create(Favorite.builder()
+                    .user(user).video(videoDao.findById(videoId))
+                    .likeDate(new Date()).build());
+        }
 
-		String videoId = req.getPathInfo() != null
-				? req.getPathInfo().replaceFirst("/", "")
-				: req.getParameter("id");
+        String ref = req.getParameter("ref");
+        resp.sendRedirect("detail".equals(ref)
+                ? req.getContextPath() + "/video/detail/" + videoId
+                : req.getContextPath() + "/home/index");
+    }
 
-		var favDao  = new FavoriteDAOImpl();
-		var videoDao = new VideoDAOImpl();
+    // ── Unlike ───────────────────────────────────────────────────────────────
+    private void handleUnlike(HttpServletRequest req, HttpServletResponse resp)
+            throws IOException {
+        User user = (User) req.getSession().getAttribute("user");
+        if (user == null) { resp.sendRedirect(req.getContextPath() + "/auth/login"); return; }
 
-		// Chỉ lưu nếu chưa like
-		if (favDao.findByUserAndVideo(user.getEmail(), videoId) == null) {
-			favDao.create(Favorite.builder()
-					.user(user)
-					.video(videoDao.findById(videoId))
-					.likeDate(new Date())
-					.build());
-		}
+        String favId = req.getPathInfo() != null
+                ? req.getPathInfo().replaceFirst("/", "") : req.getParameter("id");
 
-		// Trở về nguồn gọi
-		String ref = req.getParameter("ref");
-		if ("detail".equals(ref)) {
-			resp.sendRedirect(req.getContextPath() + "/video/detail/" + videoId);
-		} else {
-			resp.sendRedirect(req.getContextPath() + "/home/index");
-		}
-	}
+        var favDao = new FavoriteDAOImpl();
+        try {
+            Favorite fav = favDao.findById(Integer.parseInt(favId));
+            if (fav != null && fav.getUser().getEmail().equals(user.getEmail()))
+                favDao.delete(fav);
+        } catch (Exception ignored) {}
 
-	// ── Share qua email (yêu cầu đăng nhập) ────────────────────────────────
-	private void handleShare(HttpServletRequest req, HttpServletResponse resp)
-			throws ServletException, IOException {
+        resp.sendRedirect(req.getContextPath() + "/video/favorites");
+    }
 
-		User user = (User) req.getSession().getAttribute("user");
-		if (user == null) {
-			resp.sendRedirect(req.getContextPath() + "/auth/login");
-			return;
-		}
+    // ── Favorites ────────────────────────────────────────────────────────────
+    private void handleFavorites(HttpServletRequest req, HttpServletResponse resp)
+            throws ServletException, IOException {
+        User user = (User) req.getSession().getAttribute("user");
+        if (user == null) {
+            resp.sendRedirect(req.getContextPath() + "/auth/login?ref="
+                    + req.getContextPath() + "/video/favorites");
+            return;
+        }
 
-		String videoId = req.getPathInfo() != null
-				? req.getPathInfo().replaceFirst("/", "")
-				: req.getParameter("id");
+        var favDao = new FavoriteDAOImpl();
+        req.setAttribute("favorites", favDao.findByUser(user.getEmail()));
+        req.setAttribute("view", "/video/favorites.jsp");
+        req.getRequestDispatcher("/layout/index.jsp").forward(req, resp);
+    }
 
-		var videoDao = new VideoDAOImpl();
-		Video video  = videoDao.findById(videoId);
+    // ── Share ────────────────────────────────────────────────────────────────
+    private void handleShare(HttpServletRequest req, HttpServletResponse resp)
+            throws ServletException, IOException {
+        User user = (User) req.getSession().getAttribute("user");
+        if (user == null) { resp.sendRedirect(req.getContextPath() + "/auth/login"); return; }
 
-		if ("GET".equalsIgnoreCase(req.getMethod())) {
-			// Hiển thị form nhập email
-			req.setAttribute("video", video);
-			req.setAttribute("view", "/video/share.jsp");
-			req.getRequestDispatcher("/layout/index.jsp").forward(req, resp);
+        String videoId = req.getPathInfo() != null
+                ? req.getPathInfo().replaceFirst("/", "") : req.getParameter("id");
+        var videoDao = new VideoDAOImpl();
+        Video video  = videoDao.findById(videoId);
 
-		} else {
-			// POST: lưu share record
-			String recipients = req.getParameter("recipients");
+        if ("GET".equalsIgnoreCase(req.getMethod())) {
+            req.setAttribute("video", video);
+            req.setAttribute("view", "/video/share.jsp");
+            req.getRequestDispatcher("/layout/index.jsp").forward(req, resp);
+        } else {
+            String recipients = req.getParameter("recipients");
+            new ShareDAOImpl().create(Share.builder()
+                    .user(user).video(video)
+                    .recipients(recipients).shareDate(new Date()).build());
 
-			new ShareDAOImpl().create(Share.builder()
-					.user(user)
-					.video(video)
-					.recipients(recipients)
-					.shareDate(new Date())
-					.build());
+            String link = req.getScheme() + "://" + req.getServerName()
+                    + ":" + req.getServerPort()
+                    + req.getContextPath() + "/video/detail/" + videoId;
 
-			// Link chia sẻ gửi cho bạn bè
-			String link = req.getScheme() + "://" + req.getServerName()
-					+ ":" + req.getServerPort()
-					+ req.getContextPath() + "/video/detail/" + videoId;
+            // TODO: MailUtil.send(recipients, "Xem tiểu phẩm: " + video.getTitle(), link);
 
-			// TODO: gửi email thực sự qua MailUtil.send(recipients, subject, link)
-
-			req.setAttribute("video", video);
-			req.setAttribute("message", "Đã chia sẻ tới: " + recipients);
-			req.setAttribute("link", link);
-			req.setAttribute("view", "/video/share.jsp");
-			req.getRequestDispatcher("/layout/index.jsp").forward(req, resp);
-		}
-	}
+            req.setAttribute("video", video);
+            req.setAttribute("message", "Đã chia sẻ tới: " + recipients);
+            req.setAttribute("link", link);
+            req.setAttribute("view", "/video/share.jsp");
+            req.getRequestDispatcher("/layout/index.jsp").forward(req, resp);
+        }
+    }
 }
