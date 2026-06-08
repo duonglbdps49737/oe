@@ -1,5 +1,5 @@
 <%@ page pageEncoding="UTF-8"%>
-<%@ taglib uri="http://java.sun.com/jstl/core_rt" prefix="c" %>
+<%@ taglib uri="jakarta.tags.core" prefix="c" %>
 <article>
     <h2>User CRUD</h2>
     <form method="post">
@@ -26,10 +26,10 @@
             <input ${form.enabled?'' : 'checked'} type="radio" name="enabled" value="false"> Inactive
         </div>
         <div>
-            <button formaction="/oe/user/create">Create</button>
-            <button formaction="/oe/user/update">Update</button>
-            <a href="/oe/user/delete/${form.email}">Delete</a>
-            <a href="/oe/user/list">Reset</a>
+            <button formaction="/user/create">Create</button>
+            <button formaction="/user/update">Update</button>
+            <a href="/user/delete/${form.email}">Delete</a>
+            <a href="/user/list">Reset</a>
         </div>
     </form>
     <hr>
@@ -55,8 +55,8 @@
                 <td>${user.admin}</td>
                 <td>${user.enabled}</td>
                 <td>
-                    <a href="/oe/user/edit/${user.email}">Edit</a> |
-                    <a href="/oe/user/delete/${user.email}">Delete</a>
+                    <a href="/user/edit/${user.email}">Edit</a> |
+                    <a href="/user/delete/${user.email}">Delete</a>
                 </td>
             </tr>
         </c:forEach>

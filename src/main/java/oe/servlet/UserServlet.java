@@ -38,7 +38,7 @@ public class UserServlet extends HttpServlet {
         } else if(path.contains("create")) {
 			user.setEmail(req.getParameter("email"));
 			user.setPassword(req.getParameter("password"));
-			user.setFullname(req.getParameter("Fullname"));
+			user.setFullname(req.getParameter("fullname"));
 			user.setEnabled(Boolean.parseBoolean(req.getParameter("enabled")));
 			user.setAdmin(Boolean.parseBoolean(req.getParameter("admin")));
             try {
@@ -47,6 +47,21 @@ public class UserServlet extends HttpServlet {
             } catch (Exception e) {
                 e.printStackTrace();
             }
+//            try {
+//                BeanUtils.populate(user, req.getParameterMap());
+//                // Debug: kiểm tra xem email có được gán không
+//                System.out.println("Create - Email: " + user.getEmail());
+//                System.out.println("Create - Fullname: " + user.getFullname());
+//
+//                if (user.getEmail() == null || user.getEmail().isEmpty()) {
+//                    System.out.println("ERROR: Email không được cấp!");
+//                } else {
+//                    userService.create(user);
+//                    System.out.println("Create thành công!");
+//                }
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//            }
         } else if(path.contains("update")) {
             try {
                 BeanUtils.populate(user, req.getParameterMap());
