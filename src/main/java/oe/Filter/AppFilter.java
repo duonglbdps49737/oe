@@ -1,33 +1,30 @@
 package oe.Filter;
 
-import jakarta.servlet.*;
+import java.io.IOException;
+
+
+import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebFilter;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import oe.helper.WebHelper;
-
-import java.io.IOException;
+import oe.Filter.HttpFilter;
+import oe.helper.XHttp;
+import oe.service.UserService;
+import oe.service.UserServiceImpl;
 
 @WebFilter("/*")
-public class AppFilter implements Filter {
-    @Override
-    public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
-        System.out.println("Before.doFilter");
-        var req  = (HttpServletRequest) servletRequest;
-        var res  = (HttpServletResponse) servletResponse;
-        WebHelper.add(req, res);
-        filterChain.doFilter(servletRequest, servletResponse);
-        WebHelper.remove();
-        servletRequest.setCharacterEncoding("UTF-8");
-        servletResponse.setCharacterEncoding("UTF-8");
-        System.out.println("After.doFilter");
-    }
-    @Override
-    public void init(FilterConfig filterConfig) throws ServletException {
-        System.out.println("init");
-    }
-    @Override
-    public void destroy() {
-        System.out.println("destroy");
-    }
+public class AppFilter implements HttpFilter {
+	@Override
+	public boolean preHandle(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
+		var user = XHttp.getSession("user");
+		if(user == null) {
+			var cookie = XHttp.getCookie("user");
+			if(cookie != null) {
+				UserService userService = new UserServiceImpl();
+				user = userService.findById(cookie.getValue());
+				XHttp.setSession("user", user);
+			}
+		}
+		return true;
+	}
 }

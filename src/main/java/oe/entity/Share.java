@@ -34,12 +34,12 @@ public class Share {
 	User user;
 	
 	@ManyToOne
-	@JoinColumn(name = "VideoId")
+	@JoinColumn(name = "Videoid")
 	Video video;
 	
 	String recipients;
 	
 	@Temporal(TemporalType.DATE)
-	@Column(name = "ShareDate")
+	@Column(name = "Sharedate")
 	Date shareDate;
 }

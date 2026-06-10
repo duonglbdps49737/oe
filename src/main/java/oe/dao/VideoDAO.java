@@ -1,6 +1,7 @@
 package oe.dao;
 
 import java.util.List;
+
 import oe.entity.Video;
 
 public interface VideoDAO {
@@ -9,8 +10,4 @@ public interface VideoDAO {
 	void delete(Video entity);
 	List<Video> findAll();
 	Video findById(String id);
-
-	List<Video> findByPage(int page, int pageSize);
-	long countAll();
-	void increaseViews(String id);
 }

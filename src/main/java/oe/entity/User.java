@@ -25,10 +25,10 @@ public class User {
 	String fullname;
 	boolean admin;
 	boolean enabled;
-
+	
 	@OneToMany(mappedBy = "user")
 	List<Favorite> favorites;
-
+	
 	@OneToMany(mappedBy = "user")
 	List<Share> shares;
 }

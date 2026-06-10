@@ -1,4 +1,4 @@
 <%@ page pageEncoding="UTF-8"%>
 <article>
-	<h3>About Us</h3>
+	<h2>About Us</h2>
 </article>

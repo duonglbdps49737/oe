@@ -6,14 +6,14 @@ import oe.entity.User;
 
 public interface UserService {
 
-    List<User> findAll();
+	List<User> findAll();
 
-    User findById(String email);
+	User findById(String email);
 
-    void deleteByEmail(String email);
+	void deleteByEmail(String email);
 
-    void create(User user);
+	void create(User user);
 
-    void update(User user);
+	void update(User user);
 
 }

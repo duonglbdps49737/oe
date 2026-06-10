@@ -34,10 +34,10 @@ public class Favorite {
 	User user;
 	
 	@ManyToOne
-	@JoinColumn(name = "VideoId")
+	@JoinColumn(name = "Videoid")
 	Video video;
 	
 	@Temporal(TemporalType.DATE)
-	@Column(name = "LikeDate")
+	@Column(name = "Likedate")
 	Date likeDate;
 }
