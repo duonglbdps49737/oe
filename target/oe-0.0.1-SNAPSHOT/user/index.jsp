@@ -5,31 +5,45 @@
 	<form method="post">
 	    <div>
 	        <div>Email</div>
-	        <input name="email" value="${form.email}">
-	    </div>
+			<label>
+				<input name="email" value="${form.email}">
+			</label>
+		</div>
 	    <div>
 	        <div>Password</div>
-	        <input name="password" value="${form.password}">
-	    </div>
+			<label>
+				<input name="password" value="${form.password}">
+			</label>
+		</div>
 	    <div>
 	        <div>Fullname</div>
-	        <input name="fullname" value="${form.fullname}">
-	    </div>
+			<label>
+				<input name="fullname" value="${form.fullname}">
+			</label>
+		</div>
 	    <div>
 	        <div>Role</div>
-	        <input ${form.admin?'checked' : ''} type="radio" name="admin" value="true"> Admin
-	        <input ${form.admin?'' : 'checked'} type="radio" name="admin" value="false"> User
+			<label>
+				<input ${form.admin?'checked' : ''} type="radio" name="admin" value="true">
+			</label> Admin
+			<label>
+				<input ${form.admin?'' : 'checked'} type="radio" name="admin" value="false">
+			</label> User
 	    </div>
 	    <div>
 	        <div>Status</div>
-	        <input ${form.enabled?'checked' : ''} type="radio" name="enabled" value="true"> Active
-	        <input ${form.enabled?'' : 'checked'} type="radio" name="enabled" value="false"> Inactive
+			<label>
+				<input ${form.enabled?'checked' : ''} type="radio" name="enabled" value="true">
+			</label> Active
+			<label>
+				<input ${form.enabled?'' : 'checked'} type="radio" name="enabled" value="false">
+			</label> Inactive
 	    </div>
 	    <div>
 	        <button formaction="/oe/user/create">Create</button>
 	        <button formaction="/oe/user/update">Update</button>
 	        <a href="/oe/user/delete/${form.email}">Delete</a>
-	        <a href="/oe/user/list">Reset</a>
+	        <a href="${pageContext.request.contextPath}/oe/user/list">Reset</a>
 	    </div>
 	</form>
 	<hr>

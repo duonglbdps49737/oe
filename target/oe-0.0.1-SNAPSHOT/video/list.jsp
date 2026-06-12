@@ -3,6 +3,7 @@
 <article>
 	<h3>Video List</h3>
 	<div class="row">
+		<jsp:useBean id="videos" scope="request" type="java.util.List"/>
 		<c:forEach items="${videos}" var="v">
 			<div class="col-4">
 				<div class="card mb-3">

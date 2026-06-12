@@ -2,10 +2,7 @@ package oe.entity;
 
 import java.util.List;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -26,8 +23,10 @@ public class Video {
 	String description;
 	int views;
 	boolean active;
+
+
 	
-	@OneToMany(mappedBy = "video")
+	@OneToMany(mappedBy = "video", fetch = FetchType.EAGER)
 	List<Favorite> favorites;
 	
 	@OneToMany(mappedBy = "video")

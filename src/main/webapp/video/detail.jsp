@@ -1,3 +1,5 @@
+<%--@elvariable id="video" type="com.sun.org.apache.xml.internal.security.signature.SignatureProperty"--%>
+<%--<jsp:useBean id="video" scope="request" type="com.sun.org.apache.xml.internal.security.signature.SignatureProperty"/>--%>
 <%@ page pageEncoding="UTF-8"%>
 <%@ taglib uri="http://java.sun.com/jstl/core_rt" prefix="c" %>
 <article>

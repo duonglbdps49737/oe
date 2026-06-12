@@ -3,11 +3,11 @@
 <article>
 	<h2>Login
 		<c:if test="${!empty user}">
-			<a href="/oe/auth/logout">Sign Out</a>
+			<a href="${pageContext.request.contextPath}/oe/auth/logout">Sign Out</a>
 		</c:if>
 	</h2>
 	<i>${msg}${param.msg}</i>
-	<form action="/oe/auth/login" method="post">
+	<form action="${pageContext.request.contextPath}/oe/auth/login" method="post">
 	    <div>
 	        <div>Username</div>
 	        <input name="email">

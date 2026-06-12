@@ -57,6 +57,7 @@ public class VideoDAOImpl implements VideoDAO{
 		var jpql = "SELECT o FROM Video o WHERE o.id=?1";
 		var query = em.createQuery(jpql, Video.class);
 		query.setParameter(1, id);
-		return query.getSingleResult();
+		var results = query.getResultList();
+		return results.isEmpty() ? null : results.get(0);
 	}
 }
