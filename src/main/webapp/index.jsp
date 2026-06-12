@@ -1,2 +1,2 @@
 <%@ page pageEncoding="UTF-8"%>
-<% response.sendRedirect(request.getContextPath() + "/user/list"); %>
+<% response.sendRedirect(request.getContextPath() + "/home/"); %>

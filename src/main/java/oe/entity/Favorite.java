@@ -39,5 +39,5 @@ public class Favorite {
 	
 	@Temporal(TemporalType.DATE)
 	@Column(name = "Likedate")
-	Date likeDate;
+	Date likeDate = new Date();
 }

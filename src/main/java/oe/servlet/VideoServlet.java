@@ -1,50 +1,57 @@
 package oe.servlet;
 
 import java.io.IOException;
-
+import java.util.Map;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import oe.dao.VideoDAO;
-import oe.dao.VideoDAOImpl;
+import oe.entity.Favorite;
+import oe.entity.User;
+import oe.entity.Video;
+import oe.helper.XHttp;
+import oe.service.FavoriteService;
+import oe.service.FavoriteServiceImpl;
+import oe.service.VideoService;
+import oe.service.VideoServiceImpl;
 
 @SuppressWarnings("serial")
 @WebServlet({
-	"/video/list", 
-	"/video/detail/*", 
+	"/video/index", 
+	"/video/detail/*",
 	"/video/like/*",
 	"/video/share/*"
 })
 public class VideoServlet extends HttpServlet {
-	VideoDAO dao = new VideoDAOImpl();
+	VideoService dao = new VideoServiceImpl();
+	FavoriteService favoriteService = new FavoriteServiceImpl();
+	
 	@Override
 	protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		var path = req.getServletPath();
-		if(path.contains("list")) {
-			var list = dao.findAll();
-			req.setAttribute("videos", list);
-			req.setAttribute("view", "/video/list.jsp");
+		var info = req.getPathInfo();
+		if(path.contains("detail")) {
+			var video = dao.findById(info.substring(1));
+			
+			var attrs = Map.of("view", "/video/detail.jsp", 
+					"video", video, "videos", dao.findAll());
+			XHttp.forward("/shared/layout.jsp", attrs);
 		} else {
-			var id = req.getPathInfo().substring(1);
-			var video = dao.findById(id);
-			if(path.contains("detail")) {
-				req.setAttribute("video", video);
-				var list = dao.findAll();
-				req.setAttribute("videos", list);
-				req.setAttribute("view", "/video/detail.jsp");
-			} else {
-				if(path.contains("like")) {
-					
-				} else if(path.contains("share")) {
-					
-				}
-				resp.sendRedirect("/oe/video/list");
-				return;
+			if(path.contains("like")) {
+				var video = Video.builder().id(info.substring(1)).build();
+				User user = XHttp.getSession("user");
+				var favorite = Favorite.builder().user(user).video(video).build();
+				favoriteService.create(favorite);
+				XHttp.redirect("/oe/video/index");
+			} else if(path.contains("share")) {
+				XHttp.redirect("/oe/video/index");
 			}
+			
+			var attrs = Map.of("view", "/video/list.jsp", 
+					"videos", dao.findAll());
+			XHttp.forward("/shared/layout.jsp", attrs);
 		}
-		req.getRequestDispatcher("/layout/index.jsp").forward(req, resp);
 	}
 }

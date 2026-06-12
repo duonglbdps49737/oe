@@ -1,19 +1,16 @@
 package oe.Filter;
 
 import java.io.IOException;
-
-
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebFilter;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import oe.Filter.HttpFilter;
 import oe.helper.XHttp;
 import oe.service.UserService;
 import oe.service.UserServiceImpl;
 
 @WebFilter("/*")
-public class AppFilter implements HttpFilter {
+public class AppFilter implements oe.Filter.HttpFilter {
 	@Override
 	public boolean preHandle(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
 		var user = XHttp.getSession("user");

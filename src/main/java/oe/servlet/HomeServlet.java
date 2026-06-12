@@ -3,7 +3,6 @@ package oe.servlet;
 import java.io.IOException;
 import java.util.Map;
 
-
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -29,6 +28,6 @@ public class HomeServlet extends HttpServlet {
 		} else if(path.contains("contact")) {
 			view = "/home/contact.jsp";
 		}
-		XHttp.forward("/layout/index.jsp", Map.of("view", view));
+		XHttp.forward("/shared/layout.jsp", Map.of("view", view));
 	}
 }

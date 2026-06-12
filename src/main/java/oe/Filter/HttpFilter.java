@@ -9,10 +9,14 @@ import jakarta.servlet.http.HttpServletResponse;
 import oe.helper.XHttp;
 
 public interface HttpFilter extends Filter {
-	default boolean preHandle(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
+	default boolean preHandle(HttpServletRequest req, HttpServletResponse resp)
+			throws IOException, ServletException {
 		return true;
 	}
-	default void postHandle(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException{}
+	
+	default void postHandle(HttpServletRequest req, HttpServletResponse resp) 
+			throws IOException, ServletException{
+	}
 	
 	@Override
 	default void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)

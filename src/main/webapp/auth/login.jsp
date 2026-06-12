@@ -14,10 +14,8 @@
 	    </div>
 	    <div>
 	        <div>Password</div>
-			<label>
-				<input name="password">
-			</label>
-		</div>
+	        <input name="password">
+	    </div>
 	    <div>
 	    	<label>
 	        	<input name="remember" type="checkbox">

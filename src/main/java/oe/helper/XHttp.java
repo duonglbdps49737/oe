@@ -9,7 +9,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.ServletRequest;
@@ -178,6 +177,22 @@ public class XHttp{
 	 */
 	public static void removeCookie(String name) {
 		XHttp.addCookie(name, "", 0);
+	}
+	
+	/**
+	 * Get/Set/Remove attribute from request/session/application scope
+	 */
+	public static <T> T getAttribute(String name) {
+		T value = XHttp.getRequest(name);
+		if(value == null) {
+			value = XHttp.getSession(name);
+		}
+		return (value != null) ? value : XHttp.getApplication(name);
+	}
+	public static void removeAttribute(String name) {
+		XHttp.removeRequest(name);
+		XHttp.removeSession(name);
+		XHttp.removeApplication(name);
 	}
 	
 	/**
