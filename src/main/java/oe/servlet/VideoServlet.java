@@ -36,7 +36,6 @@ public class VideoServlet extends HttpServlet {
 		if(path.contains("detail")) {
 			try {
 				var video = dao.findById(info.substring(1));
-
 				var attrs = Map.of("view", "/video/detail.jsp",
 						"video", video, "videos", dao.findAll());
 				XHttp.forward("/shared/layout.jsp", attrs);
